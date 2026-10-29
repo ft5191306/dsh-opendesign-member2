@@ -1,0 +1,26 @@
+{
+  "name": "@local/dsh-opendesign-plugin",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Open Design 设计委派插件：启用后向团队 Lead 注入设计派单规范，让 opendesign 预设出现在预设列表，并提供 design_reply 双向消息通道。",
+  "exports": {
+    ".": "./index.js",
+    "./od-frames": "./od-frames.mjs",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "od-frames.mjs",
+    "assets/frames",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

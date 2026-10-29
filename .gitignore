@@ -1,0 +1,11 @@
+# Build output that must never be committed.
+node_modules/
+*.log
+od-frames-debug.jsonl
+.debug-on
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp

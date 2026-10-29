@@ -1,0 +1,49 @@
+{
+  "note": "Vendored from the installed Open Design app (read-only source). Four handset/layout assets are byte copies; deck-framework.md is RENDERED from the daemon chunk that OD itself uses, so its text is exactly what OD would have written into .od-frames/. Consumed by ../od-frames.mjs at session start.",
+  "consumer": "../od-frames.mjs",
+  "framesRoot": ".od-frames",
+  "odVersion": "od-next-strategy 3.3.8 (device frames v1.0.1, layout.css v1.1.2)",
+  "files": {
+    "iphone.html": {
+      "kind": "static",
+      "odSource": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Open Design\\resources\\open-design\\plugins\\_official\\scenarios\\od-next-strategy\\assets\\task-profiles\\prototype\\device-frames\\iphone.html",
+      "sourceBytes": 8911,
+      "sourceSha256": "3246ff6d89815101615934d5ade2e67cc87cb952703fe14abc7e8b87d6d8ea5b",
+      "storedBytes": 8911,
+      "verbatim": true
+    },
+    "android.html": {
+      "kind": "static",
+      "odSource": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Open Design\\resources\\open-design\\plugins\\_official\\scenarios\\od-next-strategy\\assets\\task-profiles\\prototype\\device-frames\\android.html",
+      "sourceBytes": 9067,
+      "sourceSha256": "ddbf15a26c4e551510ad9c19322e0115b0c5f33f8710c4c128e9b275a91c2c0a",
+      "storedBytes": 9067,
+      "verbatim": true
+    },
+    "neutral.html": {
+      "kind": "static",
+      "odSource": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Open Design\\resources\\open-design\\plugins\\_official\\scenarios\\od-next-strategy\\assets\\task-profiles\\prototype\\device-frames\\neutral.html",
+      "sourceBytes": 9056,
+      "sourceSha256": "438ed024356dc0848d61de50b3d9c9bfc58310fd917821053714ca97ebd83aee",
+      "storedBytes": 9056,
+      "verbatim": true
+    },
+    "layout.css": {
+      "kind": "static",
+      "odSource": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Open Design\\resources\\open-design\\plugins\\_official\\scenarios\\od-next-strategy\\assets\\task-profiles\\prototype\\layout.css",
+      "sourceBytes": 4043,
+      "sourceSha256": "f75877e11698ff5514d66d3e6bb8abec42e92e8a0f2525e8c83ee536003d477e",
+      "storedBytes": 4043,
+      "verbatim": true
+    },
+    "deck-framework.md": {
+      "kind": "generated",
+      "generator": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Open Design\\resources\\app\\prebundled\\daemon\\chunks\\chunk-NJ5UFL7I.mjs",
+      "recipe": "header lines + blank line + ## Existing deck or selected template + renderLegacyDeckCompatibilityDirective(\"filesystem\") + blank line + ## New deck only + renderDeckFrameworkDirective(\"filesystem\"), joined with \"\\n\\n\"",
+      "parserAnchor": "server-H22RVNP3.mjs:103122-103131",
+      "storedBytes": 31630,
+      "storedSha256": "bfcbae696a6a0f45b10d67f7e34b0427ea1018a6922e1451311d04efbe6144f0",
+      "verbatim": true
+    }
+  }
+}
