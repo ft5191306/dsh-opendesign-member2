@@ -1,0 +1,20 @@
+# This package verifies several files by sha256, so their bytes must survive a
+# clone exactly. `core.autocrlf=true` (the Windows default) rewrites LF to CRLF on
+# checkout and silently breaks every recorded digest: a fresh clone reported
+# `deck-framework.md size drifted: 32185 != recorded 31630` because 555 lines had
+# been converted. These rules make the working tree byte-identical everywhere.
+
+# Verified payload: sha256-recorded in assets/frames/SOURCES.json.
+assets/frames/** -text
+
+# Generated patch: compared line-for-line against the preset package's patch.
+cordis.patch.yml -text
+
+# Plugin sources: shell scripts and Node ESM are line-ending agnostic, but keeping
+# them LF keeps diffs and the verbatim patch comparison honest.
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.svg   text eol=lf
