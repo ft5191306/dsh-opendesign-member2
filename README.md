@@ -160,6 +160,52 @@ Node 在本环境可能写不了文件（`EPERM`，即使是 pwsh 能写的路�
 
 进度信息走 stderr，stdout 只有 patch 正文，可直接重定向。
 
+## 版本漂移防护
+
+这个包里有**两处外来内容**，都会在源升级后静默过期：
+
+| 内容 | 来源 | 过期的症状 |
+|---|---|---|
+| `assets/frames/`（5 个文件） | Open Design 安装目录 | 设计者拿到过期的设备外壳与布局基元，没人报错 |
+| `cordis.patch.yml` 里 ~470 KB 提示词正文 | 同级 `dsh-opendesign-preset` 包 | 预设行为与上游不一致 |
+
+它还依赖一组**具体的 DSH 行为**（Loader 怎么解析预设行 `name:`、`tools.register` 的 schema 契约、
+`subagents` 的冷复原语义……）。这些也会变，而且变坏时同样不报错。
+
+### 检查
+
+```powershell
+$node = 'C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.exe'
+& $node tools\verify-bundle.mjs            # 外部依赖缺失时 warn，仍 exit 0
+& $node tools\verify-bundle.mjs --strict   # 缺失即失败，用于发布闸门
+```
+
+四组共 17 项：
+
+1. **载荷完整性** —— 每个文件存在、非空、匹配 `SOURCES.json` 记录的 sha256
+2. **对 OD 的保真** —— 4 个静态外壳与已装 OD 原件逐字节相同；`deck-framework.md` 从 OD 自己的
+   daemon chunk 重渲染后**字节一致**（不是"看起来对"）
+3. **行与包** —— 6 个预设行都用包名子路径；该 specifier 能从 profile 模块根解析到本包并加载出
+   Cordis 契约；patch 内无绝对 `file:` URL；其余字节与预设包 patch 逐行一致
+4. **DSH 契约** —— 见 `host-contracts.json`
+
+`host-contracts.json` 逐条记录本包依赖的 9 个 DSH 行为：每条写明**依赖什么**、**变坏会怎样**、
+**怎么验**。理由很实际：`tools.register` 的 schema 契约一变，整个会话的每次工具调用都会在请求
+阶段失败；预设行解析规则一变，六个预设全部变成"加载失败"徽章。这两类故障都不会说"是因为插件"。
+写下来，升级时可以对照 diff，而不是靠回忆。
+
+### 检测器不会空转
+
+实测过：给 `iphone.html` 末尾加 14 个字节，两条独立检查同时报错——
+
+```
+FAIL iphone.html size drifted: 8925 != recorded 8911
+FAIL vendored frames drifted from the installed OD originals: iphone.html. Re-run the preset
+     package's tools/stage-frames.mjs, then copy assets/frames/ here and refresh SOURCES.json.
+```
+
+恢复后立刻回绿。报告给的是**修复动作**，不只是错误。
+
 ## 已验证的行为
 
 | 检查 | 结果 |
@@ -175,6 +221,7 @@ Node 在本环境可能写不了文件（`EPERM`，即使是 pwsh 能写的路�
 | **主观 brief 不下规格也能推进** | ✅ 设计者主动给出主观方向并只问 3 个开放问题 |
 | **`design_reply` 双向通道（含冷复原、跨重装）** | ✅ 见 `DESIGN-REPLY.md` |
 | **自包含：不依赖 `~/.dsh/presets/opendesign/`** | ✅ patch 内 0 处绝对路径；`od-frames` 走包名子路径；载荷随包 |
+| **版本漂移防护（OD + DSH 双源）** | ✅ `tools/verify-bundle.mjs` 17 项全过；注入 14 字节漂移即报错 |
 
 ### 一个已知的行为细节
 

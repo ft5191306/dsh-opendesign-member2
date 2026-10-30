@@ -1,0 +1,60 @@
+{
+  "$comment": "Host contracts this bundle consumes. Each entry names the exact behavior the bundle relies on, so a DSH upgrade can be diffed against it instead of rediscovered by a silent failure. Verified against DSH 0.2.1-rc series. `verify-bundle.mjs` checks what is checkable offline; the rest is checked at runtime by the notes in `how`.",
+  "dshVersionObserved": "0.2.1-rc.2 / rc.3 (packages pinned in the app's desktop-runtime.json)",
+  "contracts": [
+    {
+      "id": "inject-array",
+      "claims": "A plugin's `export const inject` must be a plain array. Cordis `Inject.resolve` maps an array to `{ name: null }`; any other shape (e.g. `{ required: [], optional: [] }`) is read key-by-key as service names.",
+      "breaks": "The plugin waits forever for services named 'required'/'optional' and never activates.",
+      "how": "Static: `index.js` exports an array literal. Runtime: tools appear in cordis_inspect Tool.listTools."
+    },
+    {
+      "id": "tool-schema-json",
+      "claims": "`tools.register({ parameters })` takes REAL JSON Schema. The compact first-party form (per-property `required: true`) is compiled by `defineTool`; registering it raw puts `required` on a string node and the provider rejects the whole request with an anyOf error.",
+      "breaks": "Every tool call in the session fails at request time, not just this tool's.",
+      "how": "Static: object-level `required` array and no per-property `required`. Runtime: any tool call succeeding proves the schema was accepted."
+    },
+    {
+      "id": "row-name-resolution",
+      "claims": "A preset row's `name:` does NOT resolve against the declaring patch. Preset rows mount at the PROFILE root (`baseUrl = dirname(<profile>/cordis.yml)`). A relative `./x.mjs` therefore resolves to `profiles/<p>/x.mjs` and fails to import, taking the whole preset down. A bare package specifier is handed to Node's resolver against the profile's module base.",
+      "breaks": "Presets show a load-failed badge; the row's capability silently does not exist.",
+      "how": "Static: patch carries `@local/dsh-opendesign-plugin/od-frames`, never a file: URL or relative path. Runtime: presets appear in Config.listConfigs (11 total)."
+    },
+    {
+      "id": "subagent-activation",
+      "claims": "`subagents.startActivation({ provider: 'spawn', label, request: { parent, prompt, agentPreset, cwd }, signal, delivery: 'parent' })` returns `{ childId }` and persists the child with `subagent/descriptor` mode `continuable`. `spec.signal` is required.",
+      "breaks": "design_delegate cannot compose a design child at all.",
+      "how": "Runtime: design_delegate returns a subagentId; the child session header carries `agentPreset: opendesign*` and `delegationDepth: 1`."
+    },
+    {
+      "id": "spawn-provider-capabilities",
+      "claims": "The `spawn` provider advertises `capabilities.agentPreset === true` and `inheritsParentContext === false`, and implements `prepareContinuable`. All three are required for an independent preset.",
+      "breaks": "design_delegate refuses up front (it checks these) rather than spawning a child that runs the Lead's preset.",
+      "how": "Runtime: the up-front guard in `delegate()` throws with the observed values."
+    },
+    {
+      "id": "listChildren-shape",
+      "claims": "`subagents.listChildren(parentSessionId)` returns direct-child catalog rows of shape `{ id, mode: 'one-shot'|'continuable'|'external'|'unknown', label? }`. Rows are folded from the session log, so they survive a plugin reinstall.",
+      "breaks": "design_reply either misidentifies its own children or locks out every earlier design agent.",
+      "how": "Static: `assertDesignChild` requires `mode === 'continuable'` and `label` starting with `design: `. Runtime: a reply after a reinstall proves durability."
+    },
+    {
+      "id": "sendMessage-cold-resume",
+      "claims": "`subagents.sendMessage(sender, targetId, content, { signal })` steers a live direct child and cold-resumes an absent continuable one from persistence. Requires the exact live sender Agent. Rejects non-children with UNAUTHORIZED.",
+      "breaks": "design_reply loses post-hoc correction, which is the whole reason it exists.",
+      "how": "Runtime: reply to an already-finished design child; it answers while continuing its own context."
+    },
+    {
+      "id": "system-prompt-sections",
+      "claims": "`ctx.systemPrompt.section({ name, order, text })` accepts a section and `ctx.systemPrompt.getSectionOrder('TEAM_POLICY')` returns the built-in team policy's order.",
+      "breaks": "The delegation policy either does not appear or is placed before the tool guidance it depends on.",
+      "how": "Static: `getSectionOrder` is called with a fallback-safe expression. Runtime: the policy text is present in the Lead's system prompt."
+    },
+    {
+      "id": "team-owns-send_message",
+      "claims": "With `@deepseek-ai/dsh-experimental-agent-team-profile` loaded, `tool-subagent-control` is disabled and the Team package registers the global `send_message` (parameters `{ target, message }`, Team roster only). A subagent id is rejected with TEAM_MEMBER_NOT_FOUND.",
+      "breaks": "This is exactly why `design_reply` exists; if DSH ever merges the two channels, `design_reply` becomes redundant but still works.",
+      "how": "Runtime: send_message with a child id fails with TEAM_MEMBER_NOT_FOUND while design_reply succeeds with the same id."
+    }
+  ]
+}
