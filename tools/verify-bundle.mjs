@@ -229,7 +229,22 @@ if (rowNames.length !== 6) {
   }
   if (resolved !== undefined) {
     if (path.resolve(resolved) !== path.resolve(MODULE)) {
-      fail(`specifier resolves outside this package: ${resolved}`)
+      // A bare specifier resolves to whatever the profile has installed. When this
+      // script runs from a plain checkout (a fresh clone, CI, another machine) the
+      // profile points at its own installed copy, not at this tree — that is not a
+      // defect in the checkout, so it must not fail the run. It only means the
+      // package-level question ("does the installed package still serve this
+      // subpath?") cannot be answered from here.
+      const installedElsewhere = !path.resolve(resolved).startsWith(path.resolve(PKG) + path.sep)
+      const m =
+        `package specifier resolves to ${resolved}, not this checkout (${MODULE}). ` +
+        'The installed profile copy is what answered; install this tree to check it.'
+      if (installedElsewhere) {
+        if (strict) fail(m)
+        else warn(m)
+      } else {
+        fail(m)
+      }
     } else {
       const mod = await import(`${pathToFileURL(resolved).href}?verify=${Date.now()}`)
       if (mod.name !== 'od-frames' || typeof mod.apply !== 'function') {
